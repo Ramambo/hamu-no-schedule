@@ -1,105 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>근무 스케줄</title>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #ffffff;
-    --bg2: #f7f7f5;
-    --bg3: #f0efeb;
-    --text: #1a1a18;
-    --text2: #6b6b67;
-    --text3: #a0a09c;
-    --border: rgba(0,0,0,0.1);
-    --border2: rgba(0,0,0,0.18);
-    --radius: 10px;
-    --radius-lg: 14px;
-    --shadow: 0 1px 4px rgba(0,0,0,0.07);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #1c1c1a;
-      --bg2: #252523;
-      --bg3: #2e2e2b;
-      --text: #f0efeb;
-      --text2: #a0a09c;
-      --text3: #6b6b67;
-      --border: rgba(255,255,255,0.1);
-      --border2: rgba(255,255,255,0.18);
-    }
-  }
-  body { font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background: var(--bg3); color: var(--text); min-height: 100vh; }
-  .wrap { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
-  h1 { font-size: 20px; font-weight: 600; margin-bottom: 1.5rem; color: var(--text); }
-
-  .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 12px; }
-  .week-nav { display: flex; align-items: center; gap: 8px; }
-  .week-label { font-size: 15px; font-weight: 500; min-width: 150px; text-align: center; }
-  .btn { background: var(--bg); border: 0.5px solid var(--border2); border-radius: var(--radius); padding: 7px 14px; font-size: 13px; cursor: pointer; color: var(--text); font-family: inherit; }
-  .btn:hover { background: var(--bg2); }
-  .btn.primary { background: var(--text); color: var(--bg); border-color: var(--text); }
-  .btn.primary:hover { opacity: 0.85; }
-
-  .staff-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.25rem; }
-  .staff-tag { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 100px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1.5px solid transparent; transition: opacity .15s; user-select: none; }
-  .staff-tag.inactive { opacity: 0.3; }
-  .s0 { background: #EEEDFE; color: #3C3489; border-color: #AFA9EC; }
-  .s1 { background: #E1F5EE; color: #085041; border-color: #5DCAA5; }
-  .s2 { background: #FAECE7; color: #712B13; border-color: #F0997B; }
-  .s3 { background: #FBEAF0; color: #72243E; border-color: #ED93B1; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .d0 { background: #7F77DD; } .d1 { background: #1D9E75; } .d2 { background: #D85A30; } .d3 { background: #D4537E; }
-
-  .grid-card { background: var(--bg); border-radius: var(--radius-lg); border: 0.5px solid var(--border); overflow: hidden; box-shadow: var(--shadow); }
-  .grid-wrap { overflow-x: auto; }
-  .schedule-grid { min-width: 640px; }
-  .grid-header { display: grid; grid-template-columns: 60px repeat(7, 1fr); background: var(--bg2); border-bottom: 0.5px solid var(--border); }
-  .gh-cell { padding: 10px 4px; text-align: center; font-size: 12px; color: var(--text2); font-weight: 500; }
-  .gh-cell.today { color: #185FA5; font-weight: 600; }
-  .gh-cell .date-num { font-size: 18px; font-weight: 600; display: block; }
-  .gh-cell.today .date-num { color: #185FA5; }
-
-  .hour-row { display: grid; grid-template-columns: 60px repeat(7, 1fr); border-bottom: 0.5px solid var(--border); min-height: 52px; }
-  .hour-row:last-child { border-bottom: none; }
-  .time-col { font-size: 11px; color: var(--text3); padding: 6px 8px 0 0; text-align: right; }
-  .cell { border-left: 0.5px solid var(--border); position: relative; cursor: pointer; transition: background .1s; display: flex; flex-wrap: wrap; gap: 2px; padding: 4px; align-content: flex-start; min-height: 52px; }
-  .cell:hover { background: var(--bg2); }
-  .shift-block { border-radius: 4px; padding: 2px 6px; font-size: 11px; font-weight: 500; white-space: nowrap; }
-  .sb0 { background: #EEEDFE; color: #3C3489; }
-  .sb1 { background: #E1F5EE; color: #085041; }
-  .sb2 { background: #FAECE7; color: #712B13; }
-  .sb3 { background: #FBEAF0; color: #72243E; }
-  .overlap-warn { position: absolute; top: 3px; right: 3px; width: 6px; height: 6px; border-radius: 50%; background: #E24B4A; }
-
-  .legend { font-size: 12px; color: var(--text3); margin-top: 0.75rem; display: flex; align-items: center; gap: 5px; }
-  .legend-dot { width: 6px; height: 6px; border-radius: 50%; background: #E24B4A; display: inline-block; }
-  .save-badge { font-size: 12px; color: var(--text3); }
-
-  /* Modal */
-  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 1rem; }
-  .modal { background: var(--bg); border-radius: var(--radius-lg); border: 0.5px solid var(--border); padding: 1.5rem; width: 320px; max-width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.18); }
-  .modal h3 { font-size: 15px; font-weight: 600; margin-bottom: 1rem; }
-  .modal-staff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1.25rem; }
-  .msb { padding: 10px; border-radius: var(--radius); border: 1.5px solid transparent; cursor: pointer; font-size: 14px; font-weight: 500; text-align: center; transition: all .1s; font-family: inherit; }
-  .msb0 { background: #EEEDFE; color: #3C3489; }
-  .msb1 { background: #E1F5EE; color: #085041; }
-  .msb2 { background: #FAECE7; color: #712B13; }
-  .msb3 { background: #FBEAF0; color: #72243E; }
-  .msb.selected { border-color: currentColor; }
-  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
-
-  /* 직원 이름 편집 */
-  .edit-names-section { margin-top: 2rem; }
-  .edit-names-section summary { font-size: 13px; color: var(--text2); cursor: pointer; padding: 6px 0; }
-  .name-edit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin-top: 12px; }
-  .name-edit-item { display: flex; align-items: center; gap: 8px; }
-  .name-edit-item label { font-size: 12px; color: var(--text2); white-space: nowrap; }
-  .name-edit-item input { flex: 1; padding: 6px 10px; border: 0.5px solid var(--border2); border-radius: var(--radius); background: var(--bg); color: var(--text); font-size: 13px; font-family: inherit; }
-  .name-edit-item input:focus { outline: none; border-color: var(--border2); }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>근무 스케줄</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="wrap">
@@ -112,7 +17,7 @@
       <button class="btn" onclick="changeWeek(1)">→</button>
       <button class="btn" onclick="goToday()">오늘</button>
     </div>
-    <div style="display:flex;gap:8px;align-items:center;">
+    <div class="top-right">
       <span class="save-badge" id="saveIndicator"></span>
       <button class="btn primary" onclick="exportCSV()">CSV 내보내기</button>
     </div>
@@ -128,16 +33,19 @@
       </div>
     </div>
   </div>
-  <div class="legend"><span class="legend-dot"></span> 3명 이상 겹침 경고</div>
+
+  <div class="legend">
+    <span class="legend-dot"></span> 3명 이상 겹침 경고
+  </div>
 
   <details class="edit-names-section">
     <summary>⚙️ 직원 이름 편집</summary>
     <div class="name-edit-grid" id="nameEditGrid"></div>
-    <button class="btn primary" style="margin-top:12px;" onclick="saveNames()">이름 저장</button>
+    <button class="btn primary" style="margin-top: 12px;" onclick="saveNames()">이름 저장</button>
   </details>
 </div>
 
-<!-- Modal -->
+<!-- 모달 -->
 <div class="modal-bg" id="modal" style="display:none;" onclick="closeModalBg(event)">
   <div class="modal">
     <h3 id="modalTitle"></h3>
@@ -149,171 +57,6 @@
   </div>
 </div>
 
-<script>
-const STORAGE_KEY = 'work_schedule_v2';
-const NAME_KEY = 'work_schedule_names_v2';
-const HOURS = Array.from({length:10}, (_,i) => i + 10);
-const DAYS = ['일','월','화','수','목','금','토'];
-const DEFAULT_NAMES = ['남자친구','직원 A','직원 B','직원 C'];
-
-let staffNames = [...DEFAULT_NAMES];
-let weekOffset = 0;
-let scheduleData = {};
-let activeStaff = [0,1,2,3];
-let modalCell = null;
-let modalSelected = [];
-
-function load() {
-  try {
-    const d = localStorage.getItem(STORAGE_KEY);
-    if (d) scheduleData = JSON.parse(d);
-    const n = localStorage.getItem(NAME_KEY);
-    if (n) staffNames = JSON.parse(n);
-  } catch(e) {}
-}
-
-function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(scheduleData));
-  const el = document.getElementById('saveIndicator');
-  el.textContent = '저장됨 ✓';
-  setTimeout(() => el.textContent = '', 1500);
-}
-
-function saveNames() {
-  const inputs = document.querySelectorAll('#nameEditGrid input');
-  inputs.forEach((inp, i) => { if (inp.value.trim()) staffNames[i] = inp.value.trim(); });
-  localStorage.setItem(NAME_KEY, JSON.stringify(staffNames));
-  render();
-  alert('이름이 저장되었습니다!');
-}
-
-function dateKey(dt) { return dt.toISOString().split('T')[0]; }
-
-function getWeekStart(offset) {
-  const now = new Date();
-  const day = now.getDay();
-  const mon = new Date(now);
-  mon.setDate(now.getDate() - day + 1 + offset * 7);
-  mon.setHours(0,0,0,0);
-  return mon;
-}
-
-function renderHeader() {
-  const ws = getWeekStart(weekOffset);
-  const today = dateKey(new Date());
-  const we = new Date(ws); we.setDate(ws.getDate() + 6);
-  document.getElementById('weekLabel').textContent =
-    `${ws.getMonth()+1}/${ws.getDate()} ~ ${we.getMonth()+1}/${we.getDate()}`;
-  let html = '<div class="gh-cell"></div>';
-  for (let d = 0; d < 7; d++) {
-    const dt = new Date(ws); dt.setDate(ws.getDate() + d);
-    const isToday = dateKey(dt) === today;
-    html += `<div class="gh-cell${isToday?' today':''}">
-      ${DAYS[dt.getDay()]}<span class="date-num">${dt.getDate()}</span></div>`;
-  }
-  document.getElementById('gridHeader').innerHTML = html;
-}
-
-function renderBody() {
-  const ws = getWeekStart(weekOffset);
-  let html = '';
-  HOURS.forEach(hour => {
-    html += `<div class="hour-row"><div class="time-col">${hour}시</div>`;
-    for (let d = 0; d < 7; d++) {
-      const dt = new Date(ws); dt.setDate(ws.getDate() + d);
-      const key = `${dateKey(dt)}_${hour}`;
-      const shifts = scheduleData[key] || [];
-      const visible = shifts.filter(s => activeStaff.includes(s));
-      const overlap = visible.length >= 3;
-      let inner = visible.map(si =>
-        `<span class="shift-block sb${si}">${staffNames[si]}</span>`).join('');
-      if (overlap) inner += `<span class="overlap-warn"></span>`;
-      html += `<div class="cell" onclick="openModal('${dateKey(dt)}',${hour})">${inner}</div>`;
-    }
-    html += `</div>`;
-  });
-  document.getElementById('gridBody').innerHTML = html;
-}
-
-function renderStaffRow() {
-  document.getElementById('staffRow').innerHTML = staffNames.map((name, i) => {
-    const active = activeStaff.includes(i);
-    return `<div class="staff-tag s${i}${active?'':' inactive'}" onclick="toggleStaff(${i})">
-      <span class="dot d${i}"></span>${name}</div>`;
-  }).join('');
-}
-
-function renderNameEdit() {
-  document.getElementById('nameEditGrid').innerHTML = staffNames.map((name, i) =>
-    `<div class="name-edit-item">
-      <span class="dot d${i}" style="width:10px;height:10px;"></span>
-      <input type="text" value="${name}" placeholder="이름 입력" />
-    </div>`
-  ).join('');
-}
-
-function toggleStaff(i) {
-  if (activeStaff.includes(i)) {
-    if (activeStaff.length > 1) activeStaff = activeStaff.filter(x => x !== i);
-  } else { activeStaff.push(i); }
-  renderStaffRow(); renderBody();
-}
-
-function changeWeek(d) { weekOffset += d; render(); }
-function goToday() { weekOffset = 0; render(); }
-
-function openModal(dk, hour) {
-  modalCell = { dk, hour };
-  const key = `${dk}_${hour}`;
-  modalSelected = [...(scheduleData[key] || [])];
-  const [y,m,d] = dk.split('-');
-  document.getElementById('modalTitle').textContent = `${m}월 ${d}일 ${hour}:00 근무`;
-  document.getElementById('modalStaffGrid').innerHTML = staffNames.map((name, i) =>
-    `<button class="msb msb${i}${modalSelected.includes(i)?' selected':''}" onclick="toggleModalStaff(${i})">${name}</button>`
-  ).join('');
-  document.getElementById('modal').style.display = 'flex';
-}
-
-function toggleModalStaff(i) {
-  if (modalSelected.includes(i)) modalSelected = modalSelected.filter(x => x !== i);
-  else modalSelected.push(i);
-  document.querySelectorAll('#modalStaffGrid .msb').forEach((el, idx) => {
-    el.classList.toggle('selected', modalSelected.includes(idx));
-  });
-}
-
-function saveModal() {
-  const key = `${modalCell.dk}_${modalCell.hour}`;
-  if (modalSelected.length === 0) delete scheduleData[key];
-  else scheduleData[key] = [...modalSelected];
-  save(); closeModal(); renderBody();
-}
-
-function closeModal() { document.getElementById('modal').style.display = 'none'; }
-function closeModalBg(e) { if (e.target.id === 'modal') closeModal(); }
-
-function exportCSV() {
-  const ws = getWeekStart(weekOffset);
-  const header = ['시간', ...Array.from({length:7}, (_,d) => {
-    const dt = new Date(ws); dt.setDate(ws.getDate() + d);
-    return `${DAYS[dt.getDay()]}(${dt.getDate()}일)`;
-  })].join(',');
-  const rows = HOURS.map(hour => {
-    const cols = [`${hour}:00`];
-    for (let d = 0; d < 7; d++) {
-      const dt = new Date(ws); dt.setDate(ws.getDate() + d);
-      const key = `${dateKey(dt)}_${hour}`;
-      cols.push((scheduleData[key] || []).map(i => staffNames[i]).join('/'));
-    }
-    return cols.join(',');
-  });
-  const blob = new Blob(['\uFEFF' + [header, ...rows].join('\n')], {type:'text/csv;charset=utf-8'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = `schedule_${dateKey(getWeekStart(weekOffset))}.csv`; a.click();
-}
-
-function render() { renderHeader(); renderBody(); renderStaffRow(); renderNameEdit(); }
-load(); render();
-</script>
+<script src="script.js"></script>
 </body>
 </html>
