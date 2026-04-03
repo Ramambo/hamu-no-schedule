@@ -38,7 +38,6 @@ body {
   min-height: 100vh;
 }
 
-/* ── 레이아웃 ── */
 .wrap {
   max-width: 900px;
   margin: 0 auto;
@@ -91,6 +90,7 @@ h1 {
   color: var(--text);
   font-family: inherit;
   transition: background 0.1s, opacity 0.1s;
+  white-space: nowrap;
 }
 
 .btn:hover { background: var(--bg2); }
@@ -111,7 +111,12 @@ h1 {
 
 .btn.danger:hover { opacity: 0.85; }
 
-/* ── 직원 태그 (필터) ── */
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── 직원 필터 태그 ── */
 .staff-row {
   display: flex;
   gap: 8px;
@@ -142,7 +147,7 @@ h1 {
   flex-shrink: 0;
 }
 
-/* ── 그리드 카드 ── */
+/* ── 스케줄 그리드 ── */
 .grid-card {
   background: var(--bg);
   border-radius: var(--radius-lg);
@@ -152,7 +157,6 @@ h1 {
 }
 
 .grid-wrap { overflow-x: auto; }
-
 .schedule-grid { min-width: 640px; }
 
 .grid-header {
@@ -258,24 +262,43 @@ h1 {
   background: var(--bg);
   border-radius: var(--radius-lg);
   border: 0.5px solid var(--border);
-  padding: 1rem 1.25rem;
   box-shadow: var(--shadow);
+  overflow: hidden;
 }
 
-.section summary {
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
   font-size: 14px;
   font-weight: 500;
-  color: var(--text);
   cursor: pointer;
-  padding: 2px 0;
   user-select: none;
+  border-bottom: 0.5px solid var(--border);
 }
+
+.section-title:hover { background: var(--bg2); }
+
+.section-arrow {
+  font-size: 11px;
+  color: var(--text3);
+  transition: transform 0.2s;
+}
+
+.section-arrow.closed { transform: rotate(-90deg); }
+
+.section-body {
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.section-body.hidden { display: none; }
 
 .staff-manage-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 1rem;
+  margin-bottom: 12px;
 }
 
 .staff-manage-item {
@@ -288,20 +311,20 @@ h1 {
   background: var(--bg2);
 }
 
-.staff-manage-item .staff-color-dot {
+.staff-color-dot {
   width: 12px;
   height: 12px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.staff-manage-item .staff-name {
+.staff-name {
   flex: 1;
   font-size: 14px;
   font-weight: 500;
 }
 
-.staff-manage-item .btn-edit {
+.btn-edit {
   background: transparent;
   border: 0.5px solid var(--border2);
   border-radius: 6px;
@@ -312,12 +335,11 @@ h1 {
   font-family: inherit;
 }
 
-.staff-manage-item .btn-edit:hover { background: var(--bg3); }
+.btn-edit:hover { background: var(--bg3); }
 
 .add-staff-row {
   display: flex;
   gap: 8px;
-  margin-top: 12px;
 }
 
 .add-staff-row input {
@@ -331,7 +353,7 @@ h1 {
   font-family: inherit;
 }
 
-.add-staff-row input:focus { outline: none; }
+.add-staff-row input:focus { outline: none; border-color: var(--text3); }
 
 /* ── 모달 공통 ── */
 .modal-bg {
@@ -359,6 +381,13 @@ h1 {
   font-size: 15px;
   font-weight: 600;
   margin-bottom: 1rem;
+}
+
+.modal-desc {
+  font-size: 13px;
+  color: var(--text2);
+  margin-bottom: 1rem;
+  line-height: 1.6;
 }
 
 .modal-actions {
@@ -401,6 +430,7 @@ h1 {
   font-size: 12px;
   color: var(--text2);
   font-weight: 500;
+  margin-top: 8px;
 }
 
 .edit-staff-form input {
@@ -424,8 +454,8 @@ h1 {
 }
 
 .color-swatch {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   cursor: pointer;
   border: 2.5px solid transparent;
@@ -435,3 +465,8 @@ h1 {
 
 .color-swatch:hover { transform: scale(1.15); }
 .color-swatch.selected { border-color: var(--text); transform: scale(1.1); }
+
+/* ── 백업 상태 메시지 ── */
+.backup-success { color: #0F6E56; font-weight: 500; }
+.backup-error   { color: #A32D2D; font-weight: 500; }
+.backup-loading { color: var(--text2); }
