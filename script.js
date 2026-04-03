@@ -78,7 +78,12 @@ function showIndicator(msg) {
 
 /* ── 날짜 유틸 ── */
 
-function dateKey(dt) { return dt.toISOString().split('T')[0]; }
+function dateKey(dt) {
+  const y = dt.getFullYear();
+  const m = String(dt.getMonth() + 1).padStart(2, '0');
+  const d = String(dt.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
 
 function getWeekStart(offset) {
   const now = new Date();
