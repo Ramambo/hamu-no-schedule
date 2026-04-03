@@ -141,7 +141,7 @@ function renderBody() {
         const c = color(i);
         return `<span class="shift-block" style="background:${c.bg};color:${c.text};">${staff[i].name}</span>`;
       }).join('');
-      if (overlap) inner += `<span class="overlap-warn"></span>`;
+      if (overlap) inner += `<span class="overlap-warn-inline">⚠️ 3명 이상</span>`;
 
       html += `<div class="cell" onclick="openModal('${dateKey(dt)}',${hour})">${inner}</div>`;
     }
