@@ -1,15 +1,25 @@
-/* ── 파스텔 색상 팔레트 ── */
+/* ════════════════════════════════════════
+   GitHub 백업 설정
+   아래 두 값을 채워주세요!
+   ════════════════════════════════════════ */
+const GITHUB_TOKEN = '';        // ← 여기에 Personal Access Token 입력 (ghp_로 시작)
+const GITHUB_OWNER = 'Ramambo';
+const GITHUB_REPO  = 'hamu_no_sechdule_backup';
+const GITHUB_PATH  = 'schedule_backup.json'; // 저장될 파일명
+
+/* ════════════════════════════════════════ */
+
 const PASTEL_COLORS = [
-  { bg: '#EEEDFE', text: '#3C3489', dot: '#7F77DD', border: '#AFA9EC' }, // 라벤더
-  { bg: '#E1F5EE', text: '#085041', dot: '#1D9E75', border: '#5DCAA5' }, // 민트
-  { bg: '#FAECE7', text: '#712B13', dot: '#D85A30', border: '#F0997B' }, // 피치
-  { bg: '#FBEAF0', text: '#72243E', dot: '#D4537E', border: '#ED93B1' }, // 핑크
-  { bg: '#E6F1FB', text: '#0C447C', dot: '#378ADD', border: '#85B7EB' }, // 스카이
-  { bg: '#EAF3DE', text: '#27500A', dot: '#639922', border: '#97C459' }, // 그린
-  { bg: '#FAEEDA', text: '#633806', dot: '#BA7517', border: '#EF9F27' }, // 옐로우
-  { bg: '#FCF0F8', text: '#6B1F5A', dot: '#C45BA8', border: '#E09DD0' }, // 라일락
-  { bg: '#E8F4F8', text: '#0D4B5E', dot: '#2A8CAE', border: '#7DC4DC' }, // 아쿠아
-  { bg: '#F5EEE6', text: '#5C3A1E', dot: '#A0622F', border: '#D4956A' }, // 베이지
+  { bg: '#EEEDFE', text: '#3C3489', dot: '#7F77DD', border: '#AFA9EC' },
+  { bg: '#E1F5EE', text: '#085041', dot: '#1D9E75', border: '#5DCAA5' },
+  { bg: '#FAECE7', text: '#712B13', dot: '#D85A30', border: '#F0997B' },
+  { bg: '#FBEAF0', text: '#72243E', dot: '#D4537E', border: '#ED93B1' },
+  { bg: '#E6F1FB', text: '#0C447C', dot: '#378ADD', border: '#85B7EB' },
+  { bg: '#EAF3DE', text: '#27500A', dot: '#639922', border: '#97C459' },
+  { bg: '#FAEEDA', text: '#633806', dot: '#BA7517', border: '#EF9F27' },
+  { bg: '#FCF0F8', text: '#6B1F5A', dot: '#C45BA8', border: '#E09DD0' },
+  { bg: '#E8F4F8', text: '#0D4B5E', dot: '#2A8CAE', border: '#7DC4DC' },
+  { bg: '#F5EEE6', text: '#5C3A1E', dot: '#A0622F', border: '#D4956A' },
 ];
 
 const STORAGE_KEY = 'work_schedule_v3';
@@ -17,23 +27,23 @@ const STAFF_KEY   = 'work_schedule_staff_v3';
 const HOURS = Array.from({ length: 10 }, (_, i) => i + 10);
 const DAYS  = ['일', '월', '화', '수', '목', '금', '토'];
 
-/* ── 기본 직원 ── */
 const DEFAULT_STAFF = [
-  { name: 'CHRIS',   colorIdx: 0 },
+  { name: '남자친구', colorIdx: 0 },
   { name: '직원 A',   colorIdx: 1 },
   { name: '직원 B',   colorIdx: 2 },
   { name: '직원 C',   colorIdx: 3 },
 ];
 
-let staff        = [];   // [{ name, colorIdx }]
-let scheduleData = {};   // { 'YYYY-MM-DD_HH': [staffIndex, ...] }
-let activeStaff  = [];   // 필터에서 활성화된 인덱스
-let weekOffset   = 0;
+let staff         = [];
+let scheduleData  = {};
+let activeStaff   = [];
+let weekOffset    = 0;
+let sectionOpen   = true;
 
-let modalCell    = null;
+let modalCell     = null;
 let modalSelected = [];
-let editStaffIdx = null;
-let editColorIdx = null;
+let editStaffIdx  = null;
+let editColorIdx  = null;
 
 /* ── 로드 / 저장 ── */
 
@@ -53,13 +63,17 @@ function load() {
 
 function saveSchedule() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(scheduleData));
-  const el = document.getElementById('saveIndicator');
-  el.textContent = '저장됨 ✓';
-  setTimeout(() => (el.textContent = ''), 1500);
+  showIndicator('저장됨 ✓');
 }
 
 function saveStaff() {
   localStorage.setItem(STAFF_KEY, JSON.stringify(staff));
+}
+
+function showIndicator(msg) {
+  const el = document.getElementById('saveIndicator');
+  el.textContent = msg;
+  setTimeout(() => (el.textContent = ''), 2000);
 }
 
 /* ── 날짜 유틸 ── */
@@ -80,6 +94,14 @@ function color(idx) {
   const s = staff[idx];
   if (!s) return PASTEL_COLORS[0];
   return PASTEL_COLORS[s.colorIdx % PASTEL_COLORS.length];
+}
+
+/* ── 직원 관리 섹션 토글 ── */
+
+function toggleSection() {
+  sectionOpen = !sectionOpen;
+  document.getElementById('sectionBody').classList.toggle('hidden', !sectionOpen);
+  document.getElementById('sectionArrow').classList.toggle('closed', !sectionOpen);
 }
 
 /* ── 렌더 ── */
@@ -117,8 +139,7 @@ function renderBody() {
 
       let inner = visible.map(i => {
         const c = color(i);
-        return `<span class="shift-block"
-          style="background:${c.bg};color:${c.text};">${staff[i].name}</span>`;
+        return `<span class="shift-block" style="background:${c.bg};color:${c.text};">${staff[i].name}</span>`;
       }).join('');
       if (overlap) inner += `<span class="overlap-warn"></span>`;
 
@@ -143,7 +164,9 @@ function renderStaffRow() {
 }
 
 function renderStaffManage() {
-  document.getElementById('staffManageList').innerHTML = staff.map((s, i) => {
+  const list = document.getElementById('staffManageList');
+  if (!list) return;
+  list.innerHTML = staff.map((s, i) => {
     const c = color(i);
     return `<div class="staff-manage-item">
       <span class="staff-color-dot" style="background:${c.dot};"></span>
@@ -160,7 +183,7 @@ function render() {
   renderStaffManage();
 }
 
-/* ── 직원 필터 ── */
+/* ── 직원 필터 토글 ── */
 
 function toggleStaff(i) {
   if (activeStaff.includes(i)) {
@@ -204,8 +227,7 @@ function toggleModalStaff(i) {
   } else {
     modalSelected.push(i);
   }
-  const btns = document.querySelectorAll('#modalStaffGrid .msb');
-  btns.forEach((btn, idx) => {
+  document.querySelectorAll('#modalStaffGrid .msb').forEach((btn, idx) => {
     const c = color(idx);
     const sel = modalSelected.includes(idx);
     btn.className = `msb${sel ? ' selected' : ''}`;
@@ -232,7 +254,8 @@ function closeModalBg(e) { if (e.target.id === 'modal') closeModal(); }
 function addStaff() {
   const input = document.getElementById('newStaffName');
   const name  = input.value.trim();
-  if (!name) return;
+  if (!name) { input.focus(); return; }
+  if (staff.some(s => s.name === name)) { alert('이미 같은 이름이 있어요!'); return; }
 
   const usedColors = staff.map(s => s.colorIdx);
   let colorIdx = 0;
@@ -241,9 +264,10 @@ function addStaff() {
   }
 
   staff.push({ name, colorIdx });
-  activeStaff.push(staff.length - 1);
+  activeStaff = staff.map((_, i) => i); // 새 직원도 바로 활성화
   saveStaff();
   input.value = '';
+  input.focus();
   render();
 }
 
@@ -254,13 +278,11 @@ function openEditStaff(i) {
   editColorIdx = staff[i].colorIdx;
 
   document.getElementById('editStaffName').value = staff[i].name;
-
-  document.getElementById('colorPalette').innerHTML = PASTEL_COLORS.map((c, ci) => {
-    const sel = ci === editColorIdx;
-    return `<div class="color-swatch${sel ? ' selected' : ''}"
+  document.getElementById('colorPalette').innerHTML = PASTEL_COLORS.map((c, ci) =>
+    `<div class="color-swatch${ci === editColorIdx ? ' selected' : ''}"
       style="background:${c.dot};"
-      onclick="selectColor(${ci})"></div>`;
-  }).join('');
+      onclick="selectColor(${ci})"></div>`
+  ).join('');
 
   document.getElementById('editStaffModal').style.display = 'flex';
 }
@@ -288,7 +310,6 @@ function deleteStaff() {
 
   const delIdx = editStaffIdx;
 
-  // 스케줄에서 해당 직원 제거 + 인덱스 재정렬
   Object.keys(scheduleData).forEach(key => {
     scheduleData[key] = scheduleData[key]
       .filter(i => i !== delIdx)
@@ -312,13 +333,10 @@ function closeEditModalBg(e) { if (e.target.id === 'editStaffModal') closeEditMo
 
 function exportCSV() {
   const ws = getWeekStart(weekOffset);
-  const header = [
-    '시간',
-    ...Array.from({ length: 7 }, (_, d) => {
-      const dt = new Date(ws); dt.setDate(ws.getDate() + d);
-      return `${DAYS[dt.getDay()]}(${dt.getDate()}일)`;
-    }),
-  ].join(',');
+  const header = ['시간', ...Array.from({ length: 7 }, (_, d) => {
+    const dt = new Date(ws); dt.setDate(ws.getDate() + d);
+    return `${DAYS[dt.getDay()]}(${dt.getDate()}일)`;
+  })].join(',');
 
   const rows = HOURS.map(hour => {
     const cols = [`${hour}:00`];
@@ -326,23 +344,102 @@ function exportCSV() {
       const dt = new Date(ws); dt.setDate(ws.getDate() + d);
       const key = `${dateKey(dt)}_${hour}`;
       cols.push(
-        (scheduleData[key] || [])
-          .filter(i => i < staff.length)
-          .map(i => staff[i].name)
-          .join('/')
+        (scheduleData[key] || []).filter(i => i < staff.length).map(i => staff[i].name).join('/')
       );
     }
     return cols.join(',');
   });
 
-  const blob = new Blob(['\uFEFF' + [header, ...rows].join('\n')], {
-    type: 'text/csv;charset=utf-8',
-  });
+  const blob = new Blob(['\uFEFF' + [header, ...rows].join('\n')], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = `schedule_${dateKey(getWeekStart(weekOffset))}.csv`;
   a.click();
 }
+
+/* ── GitHub 백업 ── */
+
+function backupToGitHub() {
+  if (!GITHUB_TOKEN) {
+    alert('script.js 상단의 GITHUB_TOKEN을 먼저 입력해주세요!');
+    return;
+  }
+  setBackupStatus('GitHub에 백업 중...', 'backup-loading');
+  document.getElementById('backupConfirmBtn').disabled = true;
+  document.getElementById('backupModal').style.display = 'flex';
+  // 모달 열면서 바로 백업 시작
+  confirmBackup();
+}
+
+async function confirmBackup() {
+  if (!GITHUB_TOKEN) {
+    setBackupStatus('GITHUB_TOKEN이 비어있어요!\nscript.js 상단에 토큰을 입력해주세요.', 'backup-error');
+    document.getElementById('backupConfirmBtn').disabled = false;
+    return;
+  }
+
+  setBackupStatus('백업 중...', 'backup-loading');
+  document.getElementById('backupConfirmBtn').disabled = true;
+
+  const payload = {
+    staff,
+    scheduleData,
+    savedAt: new Date().toISOString(),
+  };
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
+  const apiUrl  = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_PATH}`;
+
+  try {
+    // 기존 파일 SHA 조회 (업데이트 시 필요)
+    let sha = null;
+    const getRes = await fetch(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${GITHUB_TOKEN}`,
+        Accept: 'application/vnd.github+json',
+      },
+    });
+    if (getRes.ok) {
+      const data = await getRes.json();
+      sha = data.sha;
+    }
+
+    // 파일 생성 or 업데이트
+    const putRes = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${GITHUB_TOKEN}`,
+        Accept: 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: `스케줄 백업 - ${new Date().toLocaleString('ko-KR')}`,
+        content,
+        ...(sha ? { sha } : {}),
+      }),
+    });
+
+    if (putRes.ok) {
+      setBackupStatus('✅ GitHub 백업 완료!', 'backup-success');
+      showIndicator('GitHub 백업 완료 ✓');
+    } else {
+      const err = await putRes.json();
+      setBackupStatus(`❌ 오류: ${err.message}`, 'backup-error');
+    }
+  } catch (e) {
+    setBackupStatus(`❌ 네트워크 오류: ${e.message}`, 'backup-error');
+  }
+
+  document.getElementById('backupConfirmBtn').disabled = false;
+}
+
+function setBackupStatus(msg, cls) {
+  const el = document.getElementById('backupStatus');
+  el.textContent = msg;
+  el.className = `modal-desc ${cls}`;
+}
+
+function closeBackupModal()    { document.getElementById('backupModal').style.display = 'none'; }
+function closeBackupModalBg(e) { if (e.target.id === 'backupModal') closeBackupModal(); }
 
 /* ── 초기 실행 ── */
 load();
