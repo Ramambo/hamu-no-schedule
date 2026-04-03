@@ -19,7 +19,7 @@
     </div>
     <div class="top-right">
       <span class="save-badge" id="saveIndicator"></span>
-      <button class="btn primary" onclick="exportCSV()">CSV 내보내기</button>
+      <button class="btn primary" onclick="exportCSV()">💾 CSV 저장</button>
     </div>
   </div>
 
@@ -38,14 +38,17 @@
     <span class="legend-dot"></span> 3명 이상 겹침 경고
   </div>
 
-  <details class="edit-names-section">
-    <summary>⚙️ 직원 이름 편집</summary>
-    <div class="name-edit-grid" id="nameEditGrid"></div>
-    <button class="btn primary" style="margin-top: 12px;" onclick="saveNames()">이름 저장</button>
+  <details class="section">
+    <summary>👥 직원 관리</summary>
+    <div class="staff-manage-list" id="staffManageList"></div>
+    <div class="add-staff-row">
+      <input type="text" id="newStaffName" placeholder="새 직원 이름" maxlength="10" />
+      <button class="btn primary" onclick="addStaff()">+ 추가</button>
+    </div>
   </details>
 </div>
 
-<!-- 모달 -->
+<!-- 근무 편집 모달 -->
 <div class="modal-bg" id="modal" style="display:none;" onclick="closeModalBg(event)">
   <div class="modal">
     <h3 id="modalTitle"></h3>
@@ -53,6 +56,25 @@
     <div class="modal-actions">
       <button class="btn" onclick="closeModal()">취소</button>
       <button class="btn primary" onclick="saveModal()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 직원 편집 모달 -->
+<div class="modal-bg" id="editStaffModal" style="display:none;" onclick="closeEditModalBg(event)">
+  <div class="modal">
+    <h3>직원 편집</h3>
+    <div class="edit-staff-form">
+      <label>이름</label>
+      <input type="text" id="editStaffName" maxlength="10" />
+      <label style="margin-top:12px;">색상</label>
+      <div class="color-palette" id="colorPalette"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn danger" onclick="deleteStaff()">삭제</button>
+      <div style="flex:1"></div>
+      <button class="btn" onclick="closeEditModal()">취소</button>
+      <button class="btn primary" onclick="saveEditStaff()">저장</button>
     </div>
   </div>
 </div>
